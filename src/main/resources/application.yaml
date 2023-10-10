@@ -1,2 +1,34 @@
 server:
   port: 8992
+
+spring:
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: -1
+      max-request-size: -1
+  sql:
+    init.mode: always
+  jpa:
+    open-in-view: false
+    defer-datasource-initialization: true
+    properties:
+      jakarta.persistence:
+        create-database-schemas: true
+        lock.timeout: 5000 # ms
+        query.timeout: 20000 # ms
+      hibernate:
+        hbm2ddl.auto: create
+  session:
+    jdbc:
+      initialize-schema: always
+  datasource:
+    name: primaryDS
+    driver-class-name: ${DATABASE_DRIVER:org.postgresql.Driver}
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5435/postgres}
+    username: ${DATABASE_USER:postgres}
+    password: ${DATABASE_PASSWORD:postgres}
+    hikari:
+      login-timeout: 1200
+      connection-timeout: 12000
+      initialization-fail-timeout: -1
