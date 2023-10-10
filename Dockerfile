@@ -1,4 +1,4 @@
 FROM openjdk:17
-ADD target/market.jar /app/market.jar
+ADD target/hakaton.jar /app/hakaton.jar
 WORKDIR /app
-ENTRYPOINT ["java", "-jar", "market.jar"]
+ENTRYPOINT ["java", "-jar", "hakaton.jar"]
