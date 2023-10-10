@@ -18,6 +18,6 @@ services:
     environment:
       DATABASE_URL: 'jdbc:postgresql://hakatonpostgres:5435/postgres'
     ports:
-      - 80:8080
+      - 80:8992
     depends_on:
       - hakatonpostgres
