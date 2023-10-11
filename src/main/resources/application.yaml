@@ -17,8 +17,10 @@ spring:
         create-database-schemas: true
         lock.timeout: 5000 # ms
         query.timeout: 20000 # ms
-      hibernate:
-        hbm2ddl.auto: create
+    hibernate:
+      naming:
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyComponentPathImpl
+      ddl-auto: update
   session:
     jdbc:
       initialize-schema: always

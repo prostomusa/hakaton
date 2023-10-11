@@ -1,15 +1,23 @@
 package com.application.hakaton.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.Getter;
+
+import java.util.List;
 
 @Entity
-@Table
+@Table(name = "branch")
+@Getter
 public class Branch extends PersistentEntity {
 
     Double latitude;
 
     Double longitude;
 
-    Integer currentLoad;
+    String address;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JoinColumn(name = "branch")
+    List<ClientTypeBranch> clientTypeBranches;
+
 }
