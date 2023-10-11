@@ -13,7 +13,7 @@ services:
     restart: always
   hakatonapp:
     build: './'
-    image: marketapp:latest
+    image: hakatonapp:latest
     restart: always
     environment:
       DATABASE_URL: 'jdbc:postgresql://hakatonpostgres:5435/postgres'

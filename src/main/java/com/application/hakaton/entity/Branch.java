@@ -6,7 +6,6 @@ import lombok.Getter;
 import java.util.List;
 
 @Entity
-@Table(name = "branch")
 @Getter
 public class Branch extends PersistentEntity {
 
