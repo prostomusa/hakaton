@@ -2,6 +2,7 @@ package com.application.hakaton.service;
 
 import com.application.hakaton.entity.Branch;
 import com.application.hakaton.entity.ClientTypeBranch;
+import com.application.hakaton.entity.OperatingMode;
 import com.application.hakaton.model.*;
 import com.application.hakaton.repository.BranchRepository;
 import lombok.AllArgsConstructor;
@@ -28,7 +29,6 @@ public class BranchService {
         List<ClientTypeBranch> clientTypeBranches = branch.getClientTypeBranches();
         clientTypeBranches.sort(
                 Comparator.comparing(ClientTypeBranch::getClientType)
-
         );
         BranchResponse branchResponse = new BranchResponse();
         List<ClientTypeEnum> clientTypes = new ArrayList<>();
@@ -37,7 +37,11 @@ public class BranchService {
             clientTypes.add(clientTypeBranch.getClientType());
             List<WorkingDateTime> workingDateTimes = new ArrayList<>();
 
-            clientTypeBranch.getOperatingModes().forEach(op ->
+            List<OperatingMode> sortOperatingModeList = clientTypeBranch.getOperatingModes();
+            sortOperatingModeList.sort(
+                    Comparator.comparing(OperatingMode::getWorkingDay)
+            );
+            sortOperatingModeList.forEach(op ->
                     workingDateTimes.add(new WorkingDateTime(
                         op.getWorkingDay(),
                         op.getFrom(),
