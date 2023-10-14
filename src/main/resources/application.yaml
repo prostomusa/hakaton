@@ -7,8 +7,6 @@ spring:
       enabled: true
       max-file-size: -1
       max-request-size: -1
-  sql:
-    init.mode: always
   jpa:
     open-in-view: false
     defer-datasource-initialization: true

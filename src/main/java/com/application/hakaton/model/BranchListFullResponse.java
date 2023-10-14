@@ -1,15 +1,15 @@
 package com.application.hakaton.model;
 
-import java.util.List;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
-public class BranchListResponse {
+public class BranchListFullResponse {
 
-    List<BranchResponse> branchs;
+    List<BranchFullResponse> branchs;
 }

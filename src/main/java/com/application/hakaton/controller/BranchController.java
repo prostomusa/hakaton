@@ -1,15 +1,16 @@
 package com.application.hakaton.controller;
 
+import com.application.hakaton.model.BranchFullResponse;
+import com.application.hakaton.model.BranchListFullResponse;
 import com.application.hakaton.model.BranchListResponse;
+import com.application.hakaton.model.BranchRequest;
 import com.application.hakaton.service.BranchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/branch")
 @RequiredArgsConstructor
 public class BranchController {
 
@@ -20,8 +21,20 @@ public class BranchController {
         return ResponseEntity.ok("pong");
     }
 
-    @GetMapping("/branchList")
+    @GetMapping("/list")
     public ResponseEntity<BranchListResponse> getBranchListResponse() {
         return ResponseEntity.ok(branchService.getListOfBranch());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<BranchFullResponse> getBranchById(@PathVariable Long id) {
+        return ResponseEntity.ok(branchService.getBranchFullResponse(id));
+    }
+
+    @GetMapping("/listRequest")
+    public ResponseEntity<BranchListFullResponse> getBranchListByRequestResponse(
+            @RequestBody BranchRequest branchRequest
+    ) {
+        return ResponseEntity.ok(branchService.getBranchListByRequest(branchRequest));
     }
 }

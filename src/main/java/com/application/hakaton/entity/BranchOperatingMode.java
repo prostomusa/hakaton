@@ -1,6 +1,6 @@
 package com.application.hakaton.entity;
 
-import com.application.hakaton.model.DayEnum;
+import com.application.hakaton.model.enums.DayEnum;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -8,7 +8,7 @@ import java.time.LocalTime;
 
 @Entity
 @Getter
-public class OperatingMode extends PersistentEntity {
+public class BranchOperatingMode extends PersistentEntity {
 
     @ManyToOne
     private ClientTypeBranch clientTypeBranch;

@@ -1,5 +1,7 @@
 package com.application.hakaton.model;
 
+import com.application.hakaton.model.enums.ClientTypeEnum;
+import com.application.hakaton.model.enums.DayEnum;
 import lombok.Getter;
 import lombok.Setter;
 
