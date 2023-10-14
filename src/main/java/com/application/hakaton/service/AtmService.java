@@ -5,7 +5,7 @@ import com.application.hakaton.exception.NotFoundException;
 import com.application.hakaton.model.*;
 import com.application.hakaton.model.atm.*;
 import com.application.hakaton.model.enums.AtmServiceActivityEnum;
-import com.application.hakaton.model.enums.ClientTypeEnum;
+import com.application.hakaton.model.enums.DayEnum;
 import com.application.hakaton.repository.AtmRepository;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Expression;
@@ -15,6 +15,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -75,8 +78,17 @@ public class AtmService {
                     ),
                     atmRequest.getAddress() != null && atmRequest.getAddress().length() > 1
                             ? cb.like(root.get("address"), '%' + atmRequest.getAddress() + '%')
-                            : cb.and()
+                            : cb.and(),
+                    atmRequest.isAllDay() ? cb.isTrue(root.get("isAllDay")) : cb.and()
             );
+            Predicate predicateWorkingNow = cb.and();
+            if (atmRequest.isWorkingNow() && !atmRequest.isAllDay()) {
+                LocalTime localTime = LocalTime.now();
+                predicateWorkingNow = cb.and(
+                        cb.lessThan(root.get("from"), localTime),
+                        cb.greaterThan(root.get("to"), localTime)
+                );
+            }
             Predicate predicateServices = cb.and();
             if (atmRequest.getServices() != null && !atmRequest.getServices().isEmpty()) {
                 Join<Atm, AtmServiceEntity> atmServices = root.join("atmServiceEntities");
@@ -87,7 +99,8 @@ public class AtmService {
                         cb.equal(atmServices.get("serviceActivity"), AtmServiceActivityEnum.AVAILABLE)
                 );
             }
-            return cb.and(predicate, predicateServices);
+
+            return cb.and(predicate, predicateServices, predicateWorkingNow);
         };
 
         return new AtmFullListResponse(atmRepository
@@ -135,5 +148,27 @@ public class AtmService {
             return criteriaBuilder.between(expression, val2, val1);
         }
         return criteriaBuilder.between(expression, val1, val2);
+    }
+
+    private DayEnum getDayEnum(LocalDateTime localDateTime) {
+        if (localDateTime.getDayOfWeek().equals(DayOfWeek.MONDAY)) {
+            return DayEnum.MONDAY;
+        }
+        if (localDateTime.getDayOfWeek().equals(DayOfWeek.THURSDAY)) {
+            return DayEnum.THURSDAY;
+        }
+        if (localDateTime.getDayOfWeek().equals(DayOfWeek.WEDNESDAY)) {
+            return DayEnum.WEDNESDAY;
+        }
+        if (localDateTime.getDayOfWeek().equals(DayOfWeek.TUESDAY)) {
+            return DayEnum.TUESDAY;
+        }
+        if (localDateTime.getDayOfWeek().equals(DayOfWeek.FRIDAY)) {
+            return DayEnum.FRIDAY;
+        }
+        if (localDateTime.getDayOfWeek().equals(DayOfWeek.SATURDAY)) {
+            return DayEnum.SATURDAY;
+        }
+        return DayEnum.SUNDAY;
     }
 }

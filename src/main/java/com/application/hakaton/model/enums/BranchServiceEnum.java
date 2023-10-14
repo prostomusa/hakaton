@@ -1,0 +1,21 @@
+package com.application.hakaton.model.enums;
+
+public enum BranchServiceEnum {
+    PAYMENT_ACCOUNT,
+    REGISTER_BUSINESS,
+    LEGAL_CREDITS,
+    PHYS_CREDITS,
+    BUSINESS_CARDS,
+    ACQUIRING,
+    DEPOSITS,
+    VED,
+    GUARANTEES_AND_LETTERS_OF_CREDIT,
+    SERVICE_FOR_BUSINESS,
+    SELF_EMPLOYED,
+    CARDS,
+    MORTGAGE,
+    AUTO_LOANS,
+    DEPOSITS_AND_ACCOUNTS,
+    INVESTMENT,
+    PAYMENTS_AND_TRANSFERS
+}

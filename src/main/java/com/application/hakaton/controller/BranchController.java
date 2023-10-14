@@ -38,4 +38,11 @@ public class BranchController {
     ) {
         return ResponseEntity.ok(branchService.getUpdatedLoadBranchs(branchUpdateListLoadRequest));
     }
+
+    /*@PostMapping("/getOptimized")
+    public ResponseEntity<BranchListFullResponse> getBranchListByRequestResponse(
+            @RequestBody BranchOptimizedRequest branchOptimizedRequest
+    ) {
+        return ResponseEntity.ok(branchService.getOptimizedBranchs(branchUpdateListLoadRequest));
+    }*/
 }

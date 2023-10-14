@@ -1,6 +1,8 @@
 package com.application.hakaton.model;
 
+import com.application.hakaton.model.enums.BranchServiceEnum;
 import com.application.hakaton.model.enums.ClientTypeEnum;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,7 +20,9 @@ public class BranchRequest {
 
     private CoordRequest lastCorner;
 
-    private List<ClientTypeEnum> clientTypeEnums;
+    private ClientTypeEnum clientType = ClientTypeEnum.PHYSICAL;
+
+    private List<BranchServiceEnum> branchServices;
 
     private boolean hasRamp;
 
@@ -26,6 +30,28 @@ public class BranchRequest {
 
     private String address;
 
+    @JsonProperty("holidayWorking")
     private boolean holidayWorking;
+
+    @JsonProperty("hasPrime")
+    private boolean hasPrime;
+
+    @JsonProperty("hasPrivilege")
+    private boolean hasPrivilege;
+
+    @JsonProperty("hasChildZone")
+    private boolean hasChildZone;
+
+    @JsonProperty("hasWifi")
+    private boolean hasWifi;
+
+    @JsonProperty("hasTicketOffice")
+    private boolean hasTicketOffice;
+
+    @JsonProperty("allowPets")
+    private boolean allowPets;
+
+    @JsonProperty("isWorkingNow")
+    private boolean isWorkingNow;
 
 }

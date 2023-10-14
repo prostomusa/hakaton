@@ -5,7 +5,9 @@ import com.application.hakaton.entity.ClientTypeBranch;
 import com.application.hakaton.entity.BranchOperatingMode;
 import com.application.hakaton.exception.NotFoundException;
 import com.application.hakaton.model.*;
+import com.application.hakaton.model.enums.BranchServiceEnum;
 import com.application.hakaton.model.enums.ClientTypeEnum;
+import com.application.hakaton.model.enums.DayEnum;
 import com.application.hakaton.repository.BranchRepository;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Expression;
@@ -14,6 +16,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -38,7 +43,6 @@ public class BranchService {
         }
         return mapBranchFullResponseByBranch(branch.get());
     }
-
     public BranchUpdateListLoadResponse getUpdatedLoadBranchs(
             BranchUpdateListLoadRequest branchUpdateListLoadRequest
     ) {
@@ -78,17 +82,58 @@ public class BranchService {
                     branchRequest.getAddress() != null && branchRequest.getAddress().length() > 1
                             ? cb.like(root.get("address"), '%' + branchRequest.getAddress() + '%')
                             : cb.and(),
-                    cb.equal(root.get("hasRamp"), branchRequest.isHasRamp())
+                    branchRequest.isHasRamp() ? cb.equal(root.get("hasRamp"), branchRequest.isHasRamp()) : cb.and(),
+                    branchRequest.isAllowPets() ? cb.equal(root.get("allowPets"), branchRequest.isAllowPets()) : cb.and(),
+                    branchRequest.isHasChildZone() ? cb.equal(root.get("hasChildZone"), branchRequest.isHasChildZone()) : cb.and(),
+                    branchRequest.isHasWifi() ? cb.equal(root.get("hasWifi"), branchRequest.isHasWifi()) : cb.and(),
+                    branchRequest.isHasTicketOffice() ? cb.equal(root.get("hasTicketOffice"), branchRequest.isHasTicketOffice()) : cb.and(),
+                    branchRequest.isHasPrime() ? cb.equal(root.get("hasPrime"), branchRequest.isHasPrime()) : cb.and(),
+                    branchRequest.isHasPrivilege() ? cb.equal(root.get("hasPrivilege"), branchRequest.isHasPrivilege()) : cb.and(),
+                    cb.equal(root.get("clientTypeBranches").get("clientType"), branchRequest.getClientType())
             );
-            Expression<String> exp = root.get("clientTypeBranches").get("clientType");
-            Predicate predicateListTypeClient = branchRequest.getClientTypeEnums() == null
-                    || branchRequest.getClientTypeEnums().isEmpty()
-            ? cb.and() : exp.in(branchRequest.getClientTypeEnums());
-            return cb.and(predicate, predicateListTypeClient);
+
+            Expression<DayEnum> expWorkingDay = root.get("clientTypeBranches").get("branchOperatingModes").get("workingDay");
+            Predicate predicateWorkingHolidays = branchRequest.isHolidayWorking()
+                    ? cb.and() : expWorkingDay.in(List.of(DayEnum.SATURDAY, DayEnum.SUNDAY));
+
+            return cb.and(
+                    predicate,
+                    predicateWorkingHolidays
+            );
         };
 
         return new BranchListFullResponse(branchRepository
                 .findAll(specification).stream()
+                .filter(br -> {
+                    if (!branchRequest.isWorkingNow()) {
+                        return true;
+                    }
+                    LocalDateTime localDateTime = LocalDateTime.now();
+                    DayEnum dayEnum = getDayEnum(localDateTime);
+                    LocalTime getLocalTime = localDateTime.toLocalTime();
+                    return br.getClientTypeBranches()
+                            .stream()
+                            .filter(clientTypeBranch -> clientTypeBranch.getClientType().equals(branchRequest.getClientType()))
+                            .flatMap(clientTypeBranch -> clientTypeBranch.getBranchOperatingModes().stream())
+                            .anyMatch(branchOperatingMode ->
+                                    branchOperatingMode.getWorkingDay().equals(dayEnum) &&
+                                            branchOperatingMode.getTo().isAfter(getLocalTime) &&
+                                            branchOperatingMode.getFrom().isBefore(getLocalTime)
+                            );
+                })
+                .filter(br -> {
+                    if (branchRequest.getBranchServices() == null || branchRequest.getBranchServices().isEmpty()) {
+                        return true;
+                    }
+                    List<String> services = new ArrayList<>();
+                    br.getClientTypeBranches().forEach(tt -> {
+                        if (branchRequest.getClientType().equals(tt.getClientType())) {
+                            services.addAll(List.of(tt.getServices()));
+                        }
+                    });
+                    return branchRequest.getBranchServices().stream()
+                            .anyMatch(service -> services.contains(service.toString()));
+                })
                 .map(this::mapBranchFullResponseByBranch)
                 .collect(Collectors.toList()));
     }
@@ -122,10 +167,16 @@ public class BranchService {
                 Comparator.comparing(ClientTypeBranch::getClientType)
         );
         BranchFullResponse branchResponse = new BranchFullResponse();
-        List<ClientTypeEnum> clientTypes = new ArrayList<>();
+        List<BranchClientService> branchClientServices = new ArrayList<>();
         List<OperatingModeResponse> operatingModeResponses = new ArrayList<>();
         clientTypeBranches.forEach(clientTypeBranch -> {
-            clientTypes.add(clientTypeBranch.getClientType());
+            branchClientServices.add(new BranchClientService(
+                    clientTypeBranch.getClientType(),
+                           Arrays.stream(clientTypeBranch.getServices())
+                                   .map(BranchServiceEnum::valueOf)
+                                   .collect(Collectors.toList())
+                    )
+            );
             List<WorkingDateTime> workingDateTimes = new ArrayList<>();
 
             List<BranchOperatingMode> sortBranchOperatingModeList = clientTypeBranch.getBranchOperatingModes();
@@ -150,11 +201,16 @@ public class BranchService {
         branchResponse.setAddress(branch.getAddress());
         branchResponse.setLatitude(branch.getLatitude());
         branchResponse.setLongitude(branch.getLongitude());
-        branchResponse.setClientTypes(clientTypes);
+        branchResponse.setBranchClientServices(branchClientServices);
         branchResponse.setOperatingModeResponse(operatingModeResponses);
         branchResponse.setHasRamp(branch.isHasRamp());
+        branchResponse.setHasPrivilege(branch.isHasPrivilege());
+        branchResponse.setHasPrime(branch.isHasPrime());
+        branchResponse.setAllowPets(branch.isAllowPets());
+        branchResponse.setHasWifi(branch.isHasWifi());
+        branchResponse.setHasChildZone(branch.isHasChildZone());
+        branchResponse.setHasTicketOffice(branch.isHasTicketOffice());
         branchResponse.setMetroStation(branch.getMetroStation());
-        branchResponse.setBranchServices(Arrays.asList(branch.getServices()));
         return branchResponse;
     }
 
@@ -163,5 +219,27 @@ public class BranchService {
             return criteriaBuilder.between(expression, val2, val1);
         }
         return criteriaBuilder.between(expression, val1, val2);
+    }
+
+    private DayEnum getDayEnum(LocalDateTime localDateTime) {
+        if (localDateTime.getDayOfWeek().equals(DayOfWeek.MONDAY)) {
+            return DayEnum.MONDAY;
+        }
+        if (localDateTime.getDayOfWeek().equals(DayOfWeek.THURSDAY)) {
+            return DayEnum.THURSDAY;
+        }
+        if (localDateTime.getDayOfWeek().equals(DayOfWeek.WEDNESDAY)) {
+            return DayEnum.WEDNESDAY;
+        }
+        if (localDateTime.getDayOfWeek().equals(DayOfWeek.TUESDAY)) {
+            return DayEnum.TUESDAY;
+        }
+        if (localDateTime.getDayOfWeek().equals(DayOfWeek.FRIDAY)) {
+            return DayEnum.FRIDAY;
+        }
+        if (localDateTime.getDayOfWeek().equals(DayOfWeek.SATURDAY)) {
+            return DayEnum.SATURDAY;
+        }
+        return DayEnum.SUNDAY;
     }
 }

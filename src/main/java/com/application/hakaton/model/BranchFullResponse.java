@@ -18,9 +18,19 @@ public class BranchFullResponse extends AbstractBranchResponse {
 
     private Boolean hasRamp;
 
-    private List<String> branchServices;
-
-    private List<ClientTypeEnum> clientTypes;
+    private List<BranchClientService> branchClientServices;
 
     private List<OperatingModeResponse> operatingModeResponse;
+
+    private boolean hasPrime;
+
+    private boolean hasPrivilege;
+
+    private boolean hasChildZone;
+
+    private boolean hasWifi;
+
+    private boolean hasTicketOffice;
+
+    private boolean allowPets;
 }

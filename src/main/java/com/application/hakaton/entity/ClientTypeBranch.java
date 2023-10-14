@@ -27,6 +27,13 @@ public class ClientTypeBranch extends PersistentEntity {
     )
     private String[] holidays;
 
+    @Type(StringArrayType.class)
+    @Column(
+            name = "services",
+            columnDefinition = "text[]"
+    )
+    private String[] services;
+
     private int currentLoad;
 
     private int activeWindows;
