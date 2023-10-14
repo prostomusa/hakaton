@@ -6,7 +6,6 @@ import com.application.hakaton.entity.BranchOperatingMode;
 import com.application.hakaton.exception.NotFoundException;
 import com.application.hakaton.model.*;
 import com.application.hakaton.model.enums.BranchServiceEnum;
-import com.application.hakaton.model.enums.ClientTypeEnum;
 import com.application.hakaton.model.enums.DayEnum;
 import com.application.hakaton.repository.BranchRepository;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -198,6 +197,7 @@ public class BranchService {
             ));
         });
         branchResponse.setId(branch.getId());
+        branchResponse.setName(branch.getName());
         branchResponse.setAddress(branch.getAddress());
         branchResponse.setLatitude(branch.getLatitude());
         branchResponse.setLongitude(branch.getLongitude());

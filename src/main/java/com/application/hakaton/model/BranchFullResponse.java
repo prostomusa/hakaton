@@ -18,6 +18,8 @@ public class BranchFullResponse extends AbstractBranchResponse {
 
     private Boolean hasRamp;
 
+    private String name;
+
     private List<BranchClientService> branchClientServices;
 
     private List<OperatingModeResponse> operatingModeResponse;

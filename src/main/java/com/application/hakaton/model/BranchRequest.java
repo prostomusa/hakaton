@@ -51,7 +51,7 @@ public class BranchRequest {
     @JsonProperty("allowPets")
     private boolean allowPets;
 
-    @JsonProperty("isWorkingNow")
-    private boolean isWorkingNow;
+    @JsonProperty("workingNow")
+    private boolean workingNow;
 
 }

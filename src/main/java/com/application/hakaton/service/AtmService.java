@@ -2,7 +2,6 @@ package com.application.hakaton.service;
 
 import com.application.hakaton.entity.*;
 import com.application.hakaton.exception.NotFoundException;
-import com.application.hakaton.model.*;
 import com.application.hakaton.model.atm.*;
 import com.application.hakaton.model.enums.AtmServiceActivityEnum;
 import com.application.hakaton.model.enums.DayEnum;

@@ -2,6 +2,7 @@ package com.application.hakaton.model;
 
 import com.application.hakaton.model.enums.DayEnum;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,9 +16,11 @@ public class WorkingDateTime {
     DayEnum day;
 
     @JsonFormat(pattern = "HH:mm")
+    @Schema(pattern = "HH:mm", type = "string")
     LocalTime from;
 
     @JsonFormat(pattern = "HH:mm")
+    @Schema(pattern = "HH:mm", type = "string")
     LocalTime to;
 
     public WorkingDateTime(DayEnum day, LocalTime from, LocalTime to) {
