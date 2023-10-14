@@ -30,3 +30,7 @@ spring:
       login-timeout: 1200
       connection-timeout: 12000
       initialization-fail-timeout: -1
+
+springdoc:
+  packages-to-scan: com.application
+  paths-to-match: "/**"

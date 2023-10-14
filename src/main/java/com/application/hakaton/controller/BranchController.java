@@ -1,10 +1,8 @@
 package com.application.hakaton.controller;
 
-import com.application.hakaton.model.BranchFullResponse;
-import com.application.hakaton.model.BranchListFullResponse;
-import com.application.hakaton.model.BranchListResponse;
-import com.application.hakaton.model.BranchRequest;
+import com.application.hakaton.model.*;
 import com.application.hakaton.service.BranchService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,14 +10,10 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/branch")
 @RequiredArgsConstructor
+@Tag(name = "Ручки для отделений")
 public class BranchController {
 
     private final BranchService branchService;
-
-    @GetMapping("/ping")
-    public ResponseEntity<String> pingPong() {
-        return ResponseEntity.ok("pong");
-    }
 
     @GetMapping("/list")
     public ResponseEntity<BranchListResponse> getBranchListResponse() {
@@ -31,10 +25,17 @@ public class BranchController {
         return ResponseEntity.ok(branchService.getBranchFullResponse(id));
     }
 
-    @GetMapping("/listRequest")
+    @PostMapping("/listRequest")
     public ResponseEntity<BranchListFullResponse> getBranchListByRequestResponse(
             @RequestBody BranchRequest branchRequest
     ) {
         return ResponseEntity.ok(branchService.getBranchListByRequest(branchRequest));
+    }
+
+    @PostMapping("/updatedCurrentLoad")
+    public ResponseEntity<BranchUpdateListLoadResponse> getBranchListByRequestResponse(
+            @RequestBody BranchUpdateListLoadRequest branchUpdateListLoadRequest
+    ) {
+        return ResponseEntity.ok(branchService.getUpdatedLoadBranchs(branchUpdateListLoadRequest));
     }
 }

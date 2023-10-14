@@ -21,15 +21,19 @@ public class OperatingModeResponse {
 
     private int currentLoad;
 
+    private int activeWindow;
+
     public OperatingModeResponse(
             ClientTypeEnum type,
             String[] holidays,
             List<WorkingDateTime> workingDateTime,
-            int currentLoad
+            int currentLoad,
+            int activeWindow
     ) {
         this.type = type;
         this.holidays = Arrays.stream(holidays).map(DayEnum::valueOf).collect(Collectors.toList());
         this.workingDateTime = workingDateTime;
         this.currentLoad = currentLoad;
+        this.activeWindow = activeWindow;
     }
 }

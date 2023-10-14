@@ -40,6 +40,26 @@ public class AtmService {
         return mapAtmFullResponseByAtm(atm.get());
     }
 
+    public AtmUpdateListLoadResponse getUpdatedLoadAtms(
+            AtmUpdateListLoadRequest atmUpdateListLoadRequest
+    ) {
+        List<Long> idList =
+                atmUpdateListLoadRequest.getIdList();
+        Specification<Atm> specification = (root, query, cb) -> {
+            List<Predicate> predicateList = new ArrayList<>();
+            idList.forEach(id -> predicateList.add(
+                    cb.and(
+                            cb.equal(root.get("id"), id)
+                    )
+            ));
+            return cb.or(predicateList.toArray(Predicate[]::new));
+        };
+        return new AtmUpdateListLoadResponse(atmRepository
+                .findAll(specification).stream()
+                .map(this::mapAtmUpdateLoadResponse)
+                .collect(Collectors.toList()));
+    }
+
     public AtmFullListResponse getAtmListByRequest(AtmRequest atmRequest) {
         Specification<Atm> specification = (root, query, cb) -> {
             Predicate predicate = cb.and(
@@ -101,6 +121,13 @@ public class AtmService {
         atmFullResponse.setLatitude(atm.getLatitude());
         atmFullResponse.setServices(services);
         return atmFullResponse;
+    }
+
+    private AtmUpdateLoadResponse mapAtmUpdateLoadResponse(Atm atm) {
+        AtmUpdateLoadResponse atmUpdateLoadResponse = new AtmUpdateLoadResponse();
+        atmUpdateLoadResponse.setId(atm.getId());
+        atmUpdateLoadResponse.setCurrentLoad(atm.getCurrentLoad());
+        return atmUpdateLoadResponse;
     }
 
     private Predicate setBetween(Expression expression, CriteriaBuilder criteriaBuilder, Double val1, Double val2) {

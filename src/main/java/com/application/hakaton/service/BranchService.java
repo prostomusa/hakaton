@@ -39,6 +39,26 @@ public class BranchService {
         return mapBranchFullResponseByBranch(branch.get());
     }
 
+    public BranchUpdateListLoadResponse getUpdatedLoadBranchs(
+            BranchUpdateListLoadRequest branchUpdateListLoadRequest
+    ) {
+        List<Long> idList =
+                branchUpdateListLoadRequest.getIdList();
+        Specification<Branch> specification = (root, query, cb) -> {
+            List<Predicate> predicateList = new ArrayList<>();
+            idList.forEach(id -> predicateList.add(
+                    cb.and(
+                            cb.equal(root.get("id"), id)
+                    )
+            ));
+            return cb.or(predicateList.toArray(Predicate[]::new));
+        };
+        return new BranchUpdateListLoadResponse(branchRepository
+                .findAll(specification).stream()
+                .map(this::mapBranchUpdateListLoadResponse)
+                .collect(Collectors.toList()));
+    }
+
     public BranchListFullResponse getBranchListByRequest(BranchRequest branchRequest) {
         Specification<Branch> specification = (root, query, cb) -> {
             Predicate predicate = cb.and(
@@ -82,6 +102,20 @@ public class BranchService {
         return branchResponse;
     }
 
+    private BranchUpdateLoadResponse mapBranchUpdateListLoadResponse(Branch branch) {
+        BranchUpdateLoadResponse branchResponse = new BranchUpdateLoadResponse();
+        branchResponse.setId(branch.getId());
+        List<BranchCertainClient> clients = new ArrayList<>();
+        branch.getClientTypeBranches().forEach(clientTypeBranch -> {
+            BranchCertainClient branchCertainClient = new BranchCertainClient();
+            branchCertainClient.setClientType(clientTypeBranch.getClientType());
+            branchCertainClient.setCurrentLoad(clientTypeBranch.getCurrentLoad());
+            clients.add(branchCertainClient);
+        });
+        branchResponse.setClients(clients);
+        return branchResponse;
+    }
+
     private BranchFullResponse mapBranchFullResponseByBranch(Branch branch) {
         List<ClientTypeBranch> clientTypeBranches = branch.getClientTypeBranches();
         clientTypeBranches.sort(
@@ -108,7 +142,8 @@ public class BranchService {
                     clientTypeBranch.getClientType(),
                     clientTypeBranch.getHolidays(),
                     workingDateTimes,
-                    clientTypeBranch.getCurrentLoad()
+                    clientTypeBranch.getCurrentLoad(),
+                    clientTypeBranch.getActiveWindows()
             ));
         });
         branchResponse.setId(branch.getId());

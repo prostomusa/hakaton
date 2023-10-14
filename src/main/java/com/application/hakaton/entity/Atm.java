@@ -2,12 +2,14 @@ package com.application.hakaton.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalTime;
 import java.util.List;
 
 @Entity(name = "atm")
 @Getter
+@Setter
 public class Atm extends PersistentEntity {
 
     private Double latitude;
