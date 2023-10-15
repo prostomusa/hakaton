@@ -1,9 +1,8 @@
 package com.application.hakaton.cron;
 
-import com.application.hakaton.entity.Atm;
-import com.application.hakaton.entity.Branch;
-import com.application.hakaton.entity.ClientTypeBranch;
+import com.application.hakaton.entity.*;
 import com.application.hakaton.repository.AtmRepository;
+import com.application.hakaton.repository.BranchClientTypeAvgRepository;
 import com.application.hakaton.repository.BranchRepository;
 import com.application.hakaton.repository.ClientTypeBranchRepository;
 import lombok.AllArgsConstructor;
@@ -12,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -25,6 +26,8 @@ public class CrontTasks {
     private final AtmRepository atmRepository;
 
     private final ClientTypeBranchRepository clientTypeBranchRepository;
+
+    private final BranchClientTypeAvgRepository branchClientTypeAvgRepository;
 
     private final Random random = new Random();
 
@@ -73,4 +76,5 @@ public class CrontTasks {
         atmRepository.saveAll(atmList);
         logger.info("Stop Schedule Atm");
     }
+
 }

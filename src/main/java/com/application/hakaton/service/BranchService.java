@@ -1,12 +1,14 @@
 package com.application.hakaton.service;
 
 import com.application.hakaton.entity.Branch;
+import com.application.hakaton.entity.BranchClientTypeAvg;
 import com.application.hakaton.entity.ClientTypeBranch;
 import com.application.hakaton.entity.BranchOperatingMode;
 import com.application.hakaton.exception.NotFoundException;
 import com.application.hakaton.model.*;
 import com.application.hakaton.model.enums.BranchServiceEnum;
 import com.application.hakaton.model.enums.DayEnum;
+import com.application.hakaton.repository.BranchClientTypeAvgRepository;
 import com.application.hakaton.repository.BranchRepository;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Expression;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Month;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -26,6 +29,8 @@ import java.util.stream.Collectors;
 public class BranchService {
 
     private final BranchRepository branchRepository;
+
+    private final BranchClientTypeAvgRepository branchClientTypeAvgRepository;
 
     public BranchListResponse getListOfBranch() {
         List<Branch> branches = branchRepository.findAll();
@@ -42,6 +47,7 @@ public class BranchService {
         }
         return mapBranchFullResponseByBranch(branch.get());
     }
+
     public BranchUpdateListLoadResponse getUpdatedLoadBranchs(
             BranchUpdateListLoadRequest branchUpdateListLoadRequest
     ) {
@@ -60,6 +66,49 @@ public class BranchService {
                 .findAll(specification).stream()
                 .map(this::mapBranchUpdateListLoadResponse)
                 .collect(Collectors.toList()));
+    }
+
+    public List<BranchFullResponse> getOptimized(BranchOptimizedRequest request) {
+        TreeMap<Double, BranchFullResponse> map = new TreeMap<>();
+        LocalDateTime nowDateTime = LocalDateTime.now();
+        DayEnum dayEnum = getDayEnum(nowDateTime);
+        request.getBranchs().forEach(branchWithRoadTime -> {
+            try {
+                Branch branch = branchRepository.findById(branchWithRoadTime.getId()).get();
+                ClientTypeBranch clientTypeBranch = branch.getClientTypeBranches()
+                        .stream()
+                        .filter(clientTypeBranch1 -> request.getClientType().equals(clientTypeBranch1.getClientType()))
+                        .findFirst().get();
+                BranchOperatingMode branchOperatingMode = clientTypeBranch.getBranchOperatingModes()
+                        .stream()
+                        .filter(branchOperatingMode1 -> dayEnum.equals(branchOperatingMode1.getWorkingDay()))
+                        .findFirst().get();
+                int currentLoad = clientTypeBranch.getCurrentLoad();
+                int avgClientNowCount = branchClientTypeAvgRepository
+                        .getByBranchIsAndClientTypeIsAndHourIsAndDayOfWeekIs(
+                                branch, request.getClientType(), nowDateTime.getHour(), dayEnum).getAvgClients();
+                BranchClientTypeAvg branchClientTypeAvg = branchClientTypeAvgRepository
+                        .getByBranchIsAndClientTypeIsAndHourIsAndDayOfWeekIs(
+                                branch, request.getClientType(),
+                                nowDateTime.plusSeconds(branchWithRoadTime.getRoadTime()).getHour(), dayEnum);
+                int avgClientCountToTimeRoad = branchClientTypeAvg.getAvgClients();
+                int avgCustomerServiceTime = branchClientTypeAvg.getAvgCustomerServiceTime();
+                Double formula = (((
+                        (currentLoad / avgClientNowCount) * avgClientCountToTimeRoad)
+                ) / clientTypeBranch.getActiveWindows()) * avgCustomerServiceTime
+                        + Double.valueOf(branchWithRoadTime.getRoadTime()) + 180;
+                LocalTime timeWithFormula = nowDateTime.plusSeconds(formula.intValue()).toLocalTime();
+                if (branchOperatingMode.getFrom().isBefore(timeWithFormula) &&
+                        branchOperatingMode.getTo().isAfter(timeWithFormula)
+                ) {
+                    map.put(formula, mapBranchFullResponseByBranch(branch));
+                }
+            } catch (Exception e) {
+                System.out.println("Все плохо!");
+            }
+
+        });
+        return new ArrayList<>(map.values());
     }
 
     public BranchListFullResponse getBranchListByRequest(BranchRequest branchRequest) {
